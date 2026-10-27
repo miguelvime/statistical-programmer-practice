@@ -81,13 +81,11 @@ fit1 <- glm(mort_5yr ~ ulcer_factor, data=melanoma_mort_5yr, family = binomial)
 
 tidy(fit1, conf.int = TRUE, exponentiate = TRUE)
 
-table<-tbl_regression(
+or_table<-tbl_regression(
   fit1,
   exponentiate = TRUE,
   label = list(ulcer_factor ~ "Ulcer")) |>  
   modify_caption("**Odds of dying of melanoma within 5 years**") |>
-  modify_source_note("Unadjusted logistic regression (n = 205).") |> 
-  as_gt() |> 
-  gt::gtsave("formaciones/statistical-programmer/statistical-programmer-practice/output/ulcer-or.png")
-
+  modify_source_note("Unadjusted logistic regression (n = 205).")
+or_table
 # OR for those with ulcer is 6.68 [3.18 - 15.2] p-value <0.001. So it seems like it's associated with 5yr mortality

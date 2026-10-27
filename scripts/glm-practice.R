@@ -23,7 +23,7 @@ melanoma_data_recoded <- melanoma_data |>
     status_factor = factor (status) |> 
       fct_recode(
         "Died melanoma" = "1",
-        "Alieve" = "2",
+        "Alive" = "2",
         "Died - other" = "3") |> 
       fct_relevel("Alive"),
     t_stage_factor = thickness |>
@@ -45,4 +45,8 @@ melanoma_data_recoded |>
   )) +
   geom_histogram() +
   facet_wrap(~status_factor)
+
+# 5 year mortality of melanoma
+
+melanoma_data_recoded
   

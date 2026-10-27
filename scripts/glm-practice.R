@@ -4,6 +4,8 @@ melanoma_data <- boot::melanoma
 library(tidyverse)
 library(finalfit)
 library(ggplot2)
+library (gtsummary)
+library(broom)
 
 melanoma_data |> glimpse()
 melanoma_data |> ff_glimpse()
@@ -46,7 +48,46 @@ melanoma_data_recoded |>
   geom_histogram() +
   facet_wrap(~status_factor)
 
+
 # 5 year mortality of melanoma
 
-melanoma_data_recoded
+melanoma_mort_5yr <- melanoma_data_recoded |> 
+  mutate(
+    mort_5yr = 
+      if_else((time/365) < 5 & status == 1, "Yes", "No") |> 
+      fct_relevel("No")
+  )
   
+# Association between tumour ulceration and mort_5yr
+
+melanoma_mort_5yr |> 
+  ggplot(mapping = aes(
+    x = ulcer_factor,
+    fill = ulcer_factor
+  )) +
+  stat_count() + 
+  facet_wrap(~mort_5yr,
+              labeller = labeller(mort_5yr = c(
+                "Yes" = "Died of melanoma within 5 years",
+                "No" = "Did not die of melanoma within 5 years"
+              )))
+
+# The patients who died of melanoma within 5 years had proportionally more ulcers than those who did not.
+# Ulcers can be a risk factor for death to happen within 5 years
+
+# Fit model
+
+fit1 <- glm(mort_5yr ~ ulcer_factor, data=melanoma_mort_5yr, family = binomial)
+
+tidy(fit1, conf.int = TRUE, exponentiate = TRUE)
+
+table<-tbl_regression(
+  fit1,
+  exponentiate = TRUE,
+  label = list(ulcer_factor ~ "Ulcer")) |>  
+  modify_caption("**Odds of dying of melanoma within 5 years**") |>
+  modify_source_note("Unadjusted logistic regression (n = 205).") |> 
+  as_gt() |> 
+  gt::gtsave("formaciones/statistical-programmer/statistical-programmer-practice/output/ulcer-or.png")
+
+# OR for those with ulcer is 6.68 [3.18 - 15.2] p-value <0.001. So it seems like it's associated with 5yr mortality
